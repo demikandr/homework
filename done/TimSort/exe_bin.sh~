@@ -1,0 +1,5 @@
+#!/bin/bash
+#set -x
+
+time  ./$1
+exit $?

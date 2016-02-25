@@ -1,0 +1,19 @@
+#!/bin/bash
+#set -x
+CC=g++
+CFLAGS=-O
+input_file=$1
+shift # pull off first arg
+input="$0"
+output="$1"
+filename=${input_file%%.cxx}
+#/usr/bin/time 
+$CC -o $filename.out $CFLAGS $input_file
+rc=$? #return code last process
+
+if [[ $rc -eq 0 ]]; then
+   time  ./$filename.out  < input > output
+   exit $?
+fi
+
+exit $rc

@@ -1,0 +1,25 @@
+#include <iostream>
+#include <vector>
+
+#include "/home/dima/Documents/Programming/includes/randomGen.h"
+#include "TTopElements.h"
+
+int main() {
+    int countOfMax, n;
+    std::cin >> countOfMax;
+    TTopElements<int> yatte(countOfMax);
+    std:: cin >> n;
+    std::vector <int> v(n);
+    generateRandomVector(v, n);
+    printVector(v);
+    for (int i = 0; i < n; ++i) {
+        yatte.Add(v[i]);
+    }
+    std::vector<int> result;
+    yatte.GetCurrentTop(result);
+    printVector(result);
+
+
+
+    return 0;
+}

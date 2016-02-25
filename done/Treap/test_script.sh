@@ -1,0 +1,13 @@
+#!/bin/bash
+
+g++ -std=c++0x -o testpr -O2 testpr.cxx
+g++ -std=c++0x -o treap -O2 test.cxx
+
+
+time ./testpr  >outputs/testpr.out
+time ./treap  >outputs/treap.out
+if cmp outputs/testpr.out outputs/treap.out ; then
+	echo "correct"
+else
+	echo "wtf"
+fi

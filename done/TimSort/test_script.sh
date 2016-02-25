@@ -1,0 +1,10 @@
+#!/bin/bash
+
+g++ -std=c++0x -o make_rand_arr -O2 make_rand_arr.cxx
+g++ -std=c++0x -o TimSort/TimSort -O2 TimSort/test.cxx
+g++ -std=c++0x -o Sort/Sort -O2 Sort/Sort.cxx
+
+./make_rand_arr > input
+time ./TimSort/TimSort <input >outputs/TimSort.out
+time ./Sort/Sort <input >outputs/sort.out
+

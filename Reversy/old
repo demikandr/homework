@@ -1,0 +1,131 @@
+#include <iostream>
+#include <stack>
+#include <vector>
+#include <assert.h>
+/* Обход дерева с альфа-бета отсечением — Функция score_alphabeta
+   вычисляет score(depth) более оптимально, нежели score_simple:
+   score_alphabeta(-INFTY, +INFTY, depth ) = score (depth).
+*/
+
+int INF = 100000;
+
+std::stack evristics;
+std::stack<std::vector<std::vector<int> > >  fields;
+
+int score0 = 0;
+int getEvristic() {
+    return 0;
+}
+
+int getCell( int x, int y) {
+    if ((x < 0) || (y < 0) || (y >= 8) || (x >= 8)) {
+        return -1;
+    }
+    return fields.top()[x][y];
+}
+
+int isCorrectMove(int player, int x, int y) {
+    if (getCell(x, y) != -1) {
+        return false;
+    }
+    for (int i = -1; i < 2; ++i) {
+        for (int j = -1; j < 2; ++j) {
+            if (getCell(x+i, y+j) == 1-player) {
+                for (int p = 2; p < 9; ++p) {
+                    int currentColor = getCell(x+i*p, y+j*p);
+                    if (currentColor == player) {
+                        return true;
+                    }
+                    if (currentColor == -1) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+int changeColor(int x, int y, int directionX, int directionY, int color) {
+    assert((directionX != 0) || (directionY != 0));
+    if (getCell(x, y) == -1) {
+        return 1-color;
+    }
+    if (getCell(x, y) == color) {
+        return color;
+    }
+    changeColor(x + directionX, y + directionY, directionX, directionY);
+}
+
+void doMove(int player, int x, int y) {
+    fields.push(fields.top());
+    fields.top()[x][y] = player;
+    for (int i = -1; i < 2; ++i) {
+        for (int j = -1; j < 2; ++j) {
+            if (getCell(x+i, y+j) == 1-player) {
+                changeColor(x + i, y + j, i, j, player);
+            }
+        }
+    }
+    evristics.push(getEvristic());
+}
+
+void undoMove(bool player, int x, int y) {
+    fields.pop();
+    evristics.pop();
+    //откатить эвристику
+}
+
+int score_alphabeta(int depth, int alpha, int beta, int player) { // CHANGED!
+    if (depth == 0) return score0;
+    int score_best = alpha;                              // CHANGED !
+    int score;
+
+    for (int i = 0 ; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (isCorrectMove(player,i, j)) {
+                doMove(player, i, j);//в том числе обновить эвристическую оценку
+                score = -score_alphabeta(depth - 1, beta, -best, !player); // CHANGED!
+                undoMove(player, i, j);
+                if (score > score_best) {
+                    score_best = score;
+                    if (score_best >= beta)
+                        break;    // ADDED!
+                }
+            }
+        }
+    }
+    return score_best;
+}
+
+void findBestMove(int  player) {
+    int score_best = -INF;                              // CHANGED !
+    int score;
+
+    for (int i = 0 ; i < 8; ++i) {
+        for (int j = 0; j < 8; ++j) {
+            if (isCorrectMove(player,i, j)) {
+                doMove(player, i, j);//в том числе обновить эвристическую оценку
+                score = -score_alphabeta( beta, -best, !player); // CHANGED!
+                undoMove(player, i, j);
+                if (score > score_best) {
+                    score_best = score;
+                    if (score_best >= beta)
+                        break;    // ADDED!
+                }
+            }
+        }
+    }
+}
+
+int main() {
+    int x, y, player;
+    std::string s;
+    std::cin >> s >> player;
+    while (std::cin >> s >> x >> y) {
+        doMove(player, x, y);
+        findBestMove(player);
+        std::cout << x << ' ' << y << std::endl ;
+    }
+    return 0;
+}

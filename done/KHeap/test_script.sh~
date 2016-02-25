@@ -1,0 +1,22 @@
+#!/bin/bash
+
+g++ -std=c++0x -o testK -O2 test.cxx
+g++ -std=c++0x -o testSTD -O2 test_std.cxx
+g++ -std=c++0x -o testK2 -O2 test2.cxx
+
+echo "with std::priority_queue"
+time ./testSTD < hse_sem3_problem2_data_new.txt > outputs/stdHeap.out
+
+for i in {2..10}
+do
+	echo "with $i"
+	time ./testK $i  < hse_sem3_problem2_data_new.txt  > outputs/kHeap.out 
+	if cmp outputs/stdHeap.out outputs/kHeap.out; then
+		echo "correct"
+	else
+		echo "wtf"
+	fi
+done
+time ./testK2 2  < hse_sem3_problem2_data_new.txt  > outputs/kHeap.out 
+
+#

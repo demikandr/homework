@@ -1,0 +1,15 @@
+#!/bin/bash
+#set -x
+g++ -std=c++0x -o make_rand_arr -O2 make_rand_arr.cxx
+g++ -std=c++0x -o TFrozenSet/TFrozenSet -O2 TFrozenSet/test.cxx
+g++ -std=c++0x -o Set/Set -O2 Set/Set.cxx
+
+./make_rand_arr > input
+time ./Set/Set <input > outputs/Set.out
+time ./TFrozenSet/TFrozenSet <input > outputs/TFrozenSet.out 
+
+if cmp outputs/TFrozenSet.out outputs/Set.out; then
+	echo "correct"
+else
+	echo "wtf"
+fi

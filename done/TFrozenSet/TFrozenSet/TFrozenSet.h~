@@ -1,0 +1,125 @@
+#include <my-includes/myLib.h>
+#include <vector>
+#include <assert.h>
+
+const long long MAX_HASH=2e9;
+template <class Key = int>
+class Hash {	
+	private:
+		long long p=1000000000+9;
+		std::vector<std::pair<long long, long long> > secondHashArgs;
+		std::pair<long long, long long> firstHashArgs;
+	public:
+		Hash() {
+			randNumGen.seed(0);
+		}
+		void secondHashResize(int size){
+			secondHashArgs.resize(size);
+		}
+		void newFirstHash() {
+			firstHashArgs.first=randAbs(randNumGen);
+			firstHashArgs.second=randAbs(randNumGen);
+		}
+		void newSecondHash(int ind) {
+			secondHashArgs[ind].first=randAbs(randNumGen);
+			secondHashArgs[ind].second=randAbs(randNumGen);
+		}
+		int firstHash(Key key) {
+			if (key<0)
+				key=p-(-key)%p;
+			return (((long long)key)*firstHashArgs.first+firstHashArgs.second)%p;
+		}
+		int secondHash(int ind, Key key) {
+			if (key<0)
+				key=p-(-key)%p;
+			return (((long long) key)*secondHashArgs[ind].first+secondHashArgs[ind].second)%p;
+		}
+		void printArgs() {
+			std::cout << firstHashArgs.first << ' ' << firstHashArgs.second << std::endl;
+			for (int i=0;i<secondHashArgs.size();++i) {
+				std::cout << secondHashArgs[i].first << ' ' << secondHashArgs[i].second << std::endl;
+			}
+		}
+};
+template < typename InputIterator, class Key, class hash=Hash<Key> >
+class TFrozenSet {
+	private:
+		std::vector< std::vector <Key > > hashTable;
+		std::vector< std::vector <bool> > used;
+		hash hf;
+	public:
+		TFrozenSet (InputIterator first, InputIterator last, const hash &hf = hash());
+		bool Contains( const Key & key) {
+			int firstHash=hf.firstHash(key)%hashTable.size();
+			if (hashTable[firstHash].empty()) {
+				return false;
+			}
+			int secondHash=hf.secondHash(firstHash,key)%(hashTable[firstHash].size()*hashTable[firstHash].size());
+			return (key==hashTable[firstHash][secondHash])&&(used[firstHash][secondHash]);
+		}
+};
+template < typename InputIterator, class Key, class hash >
+TFrozenSet<InputIterator, Key, hash>::TFrozenSet(InputIterator first, InputIterator last, const hash & hf) {
+	int countOfEl=0;
+	for (InputIterator it=first; it!=last; ++it) {
+		++countOfEl;
+	}
+	std::vector<std::vector< Key > > firstHashVector(countOfEl);
+	while (true) {
+		TFrozenSet::hf.newFirstHash();
+		for (InputIterator it=first; it!=last; ++it) {
+			firstHashVector[TFrozenSet::hf.firstHash(*it)%countOfEl].push_back(*it);
+		}
+		int sumOfVectorsSize=0;
+		for (int i=0;i<countOfEl;++i) {
+			sumOfVectorsSize+=firstHashVector[i].size()*firstHashVector[i].size();
+		}
+		if (sumOfVectorsSize < 4*countOfEl) {
+			break;
+		}
+		for (int i=0;i<countOfEl;++i) {
+			firstHashVector[i].clear();
+		}
+	}
+	TFrozenSet::hf.secondHashResize(countOfEl);
+	used.resize(countOfEl);
+	hashTable.resize(countOfEl);
+	for (int i=0;i<countOfEl;++i) {
+		TFrozenSet::hf.newSecondHash(i);
+		hashTable[i].resize(firstHashVector[i].size()*firstHashVector[i].size());
+		used[i].resize(firstHashVector[i].size()*firstHashVector[i].size());
+		bool secondStep=false;
+		int t=0;
+		while((!secondStep)&&(used[i].size()>0)) {
+			t++;
+			assert(t<1000000);
+			secondStep=true;
+			for (int j=0;j<used[i].size();++i)
+				used[i][j]=false;
+			for (int j=0;j<firstHashVector[i].size();++j) {
+				int newSecondHash=(TFrozenSet::hf.secondHash(i,firstHashVector[i][j]))%(used[i].size());
+				if (used[i][newSecondHash])													//&&(hashTable[i][newSecondHash]!=firstHashVector[i][j])) {
+				{
+					assert(hashTable[i][newSecondHash]!=firstHashVector[i][j]);
+					secondStep=false;
+					TFrozenSet::hf.newSecondHash(i);
+					break;
+				}
+				else {
+					used[i][newSecondHash]=true;
+					hashTable[i][newSecondHash]=firstHashVector[i][j];
+				}
+			}
+		}
+	}
+}
+
+	
+				
+				
+		
+		
+	
+	
+		
+			
